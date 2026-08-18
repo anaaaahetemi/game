@@ -81,6 +81,8 @@
     transition: transform .2s ease, box-shadow .25s ease, border-color .25s ease;
   }
   .char-circle svg { width: 74%; height: 74%; }
+  .char-option.pilot .char-circle { overflow: hidden; }
+  .char-img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .char-option.explorer { --light:#fdba74; --base:#f97316; --dark:#c2410c; --glow:rgba(249,115,22,.5); }
   .char-option.scout    { --light:#86efac; --base:#4ade80; --dark:#15803d; --glow:rgba(74,222,128,.5); }
   .char-option.pilot    { --light:#7dd3fc; --base:#38bdf8; --dark:#0369a1; --glow:rgba(56,189,248,.5); }
@@ -300,18 +302,7 @@
 
       <button class="char-option pilot" data-char="pilot">
         <span class="char-circle">
-          <svg viewBox="0 0 100 100" aria-hidden="true">
-            <path d="M27 40 C27 22 73 22 73 40 Z" fill="#0369a1"/>
-            <path d="M22 52 L11 40" stroke="#0c4a6e" stroke-width="4" stroke-linecap="round"/>
-            <path d="M78 52 L89 40" stroke="#0c4a6e" stroke-width="4" stroke-linecap="round"/>
-            <ellipse cx="35" cy="55" rx="13.5" ry="11.5" fill="#e0f2fe" stroke="#0c4a6e" stroke-width="3"/>
-            <ellipse cx="65" cy="55" rx="13.5" ry="11.5" fill="#e0f2fe" stroke="#0c4a6e" stroke-width="3"/>
-            <circle cx="35" cy="55" r="4.5" fill="#0c4a6e"/>
-            <circle cx="65" cy="55" r="4.5" fill="#0c4a6e"/>
-            <circle cx="32" cy="52" r="1.6" fill="#ffffff"/>
-            <circle cx="62" cy="52" r="1.6" fill="#ffffff"/>
-            <path d="M40 71 Q50 80 60 71" stroke="#0c4a6e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-          </svg>
+          <img class="char-img" src="pilot.png" alt="Pilot" draggable="false">
           <span class="check-badge"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </span>
         <span class="char-name">Pilot</span>
@@ -390,6 +381,10 @@ var bestScoreEl   = document.getElementById('bestScore');
 var newBestEl     = document.getElementById('newBestTag');
 var muteBtn       = document.getElementById('muteBtn');
 var W = 620, H = 700;
+
+/* pilot character image (shared by select screen + in-game player) */
+var pilotImg = new Image();
+pilotImg.src = 'pilot.png';
 
 /* ================= Audio ================= */
 var audioCtx = null, muted = false, musicTimer = null, musicStep = 0;
@@ -734,6 +729,15 @@ function drawPlayer() {
   /* body */
   ctx.save();
   ctx.shadowColor = c.base; ctx.shadowBlur = 22;
+
+  /* pilot uses the uploaded character image */
+  if (player.char === 'pilot') {
+    var s = r * 2.15;
+    ctx.drawImage(pilotImg, x - s / 2, y - s / 2, s, s);
+    ctx.restore();
+    return;
+  }
+
   var g = ctx.createRadialGradient(x - r * .3, y - r * .35, r * .15, x, y, r);
   g.addColorStop(0, c.light); g.addColorStop(1, c.dark);
   ctx.fillStyle = g;
