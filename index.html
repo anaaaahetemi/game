@@ -392,9 +392,47 @@ function playTone(freq, dur, type, vol, when) {
 function sClick()   { playTone(660, .07, 'sine', .09); }
 function sSelect()  { playTone(523, .09, 'sine', .1); playTone(784, .12, 'sine', .1, audioCtx ? audioCtx.currentTime + .07 : undefined); }
 function sStart()   { [523, 659, 784].forEach(function (f, i) { playTone(f, .16, 'sine', .1, audioCtx ? audioCtx.currentTime + i * .08 : undefined); }); }
-function sCatch(m)  { playTone(660 + m * 70, .09, 'sine', .12); playTone(990 + m * 70, .12, 'sine', .09, audioCtx ? audioCtx.currentTime + .05 : undefined); }
+function bellStrike(freq, when, dur, vol) {
+  playTone(freq, dur, 'sine', vol, when);
+  playTone(freq * 2.76, dur * 0.7, 'sine', vol * 0.4, when);
+  playTone(freq * 5.4, dur * 0.4, 'sine', vol * 0.22, when);
+}
+function sCatch(m) {
+  /* clingy bell chime — rises in pitch with combo */
+  var t0 = audioCtx ? audioCtx.currentTime : undefined;
+  var f = 1318 + m * 90;
+  bellStrike(f, t0, .22, .13);
+  bellStrike(f * 1.335, t0 ? t0 + .045 : undefined, .18, .08);
+  bellStrike(f, t0 ? t0 + .1 : undefined, .2, .09);
+}
 function sGolden()  { [1046, 1318, 1568].forEach(function (f, i) { playTone(f, .16, 'sine', .1, audioCtx ? audioCtx.currentTime + i * .06 : undefined); }); }
-function sHit()     { playTone(180, .28, 'sawtooth', .14); playTone(90, .38, 'square', .08, audioCtx ? audioCtx.currentTime + .05 : undefined); }
+function sHit() {
+  /* BOOM — noise explosion + sub-bass thump */
+  if (muted) return;
+  initAudio();
+  if (!audioCtx) return;
+  var t0 = audioCtx.currentTime, dur = .55;
+  var buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+  var data = buffer.getChannelData(0);
+  for (var i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  var src = audioCtx.createBufferSource(); src.buffer = buffer;
+  var filt = audioCtx.createBiquadFilter(); filt.type = 'lowpass';
+  filt.frequency.setValueAtTime(950, t0);
+  filt.frequency.exponentialRampToValueAtTime(80, t0 + dur);
+  var g = audioCtx.createGain();
+  g.gain.setValueAtTime(.55, t0);
+  g.gain.exponentialRampToValueAtTime(.001, t0 + dur);
+  src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+  src.start(t0);
+  var osc = audioCtx.createOscillator(); osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, t0);
+  osc.frequency.exponentialRampToValueAtTime(35, t0 + .35);
+  var g2 = audioCtx.createGain();
+  g2.gain.setValueAtTime(.5, t0);
+  g2.gain.exponentialRampToValueAtTime(.001, t0 + .45);
+  osc.connect(g2); g2.connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0 + .5);
+}
 function sOver()    { [523, 392, 330, 262].forEach(function (f, i) { playTone(f, .26, 'triangle', .1, audioCtx ? audioCtx.currentTime + i * .18 : undefined); }); }
 function sBest()    { [523, 659, 784, 1046].forEach(function (f, i) { playTone(f, .2, 'sine', .1, audioCtx ? audioCtx.currentTime + i * .1 : undefined); }); }
 
