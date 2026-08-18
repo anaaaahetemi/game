@@ -81,8 +81,7 @@
     transition: transform .2s ease, box-shadow .25s ease, border-color .25s ease;
   }
   .char-circle svg { width: 74%; height: 74%; }
-  .char-option.pilot .char-circle { overflow: hidden; }
-  .char-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .char-img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 50%; }
   .char-option.explorer { --light:#fdba74; --base:#f97316; --dark:#c2410c; --glow:rgba(249,115,22,.5); }
   .char-option.scout    { --light:#86efac; --base:#4ade80; --dark:#15803d; --glow:rgba(74,222,128,.5); }
   .char-option.pilot    { --light:#7dd3fc; --base:#38bdf8; --dark:#0369a1; --glow:rgba(56,189,248,.5); }
@@ -263,18 +262,7 @@
     <div class="char-grid">
       <button class="char-option explorer" data-char="explorer">
         <span class="char-circle">
-          <svg viewBox="0 0 100 100" aria-hidden="true">
-            <ellipse cx="50" cy="34" rx="35" ry="9" fill="#e3d3ad"/>
-            <path d="M33 36 C33 19 67 19 67 36 Z" fill="#f6eeda"/>
-            <rect x="33" y="28.5" width="34" height="7.5" rx="3" fill="#c9b27e"/>
-            <circle cx="36" cy="53" r="5.5" fill="#1c1917"/>
-            <circle cx="64" cy="53" r="5.5" fill="#1c1917"/>
-            <circle cx="38" cy="51" r="1.8" fill="#ffffff"/>
-            <circle cx="66" cy="51" r="1.8" fill="#ffffff"/>
-            <path d="M40 67 Q50 77 60 67" stroke="#1c1917" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <circle cx="29" cy="63" r="4.5" fill="#fda4af" opacity=".75"/>
-            <circle cx="71" cy="63" r="4.5" fill="#fda4af" opacity=".75"/>
-          </svg>
+          <img class="char-img" src="explorer.png" alt="Explorer" draggable="false">
           <span class="check-badge"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </span>
         <span class="char-name">Explorer</span>
@@ -282,19 +270,7 @@
 
       <button class="char-option scout" data-char="scout">
         <span class="char-circle">
-          <svg viewBox="0 0 100 100" aria-hidden="true">
-            <line x1="50" y1="26" x2="50" y2="10" stroke="#14532d" stroke-width="3.5" stroke-linecap="round"/>
-            <circle cx="50" cy="8" r="5.5" fill="#fde047"/>
-            <circle cx="50" cy="8" r="2.2" fill="#ffffff" opacity=".85"/>
-            <rect x="27" y="26" width="46" height="8" rx="4" fill="#14532d"/>
-            <circle cx="36" cy="51" r="5.5" fill="#052e16"/>
-            <circle cx="64" cy="51" r="5.5" fill="#052e16"/>
-            <circle cx="38" cy="49" r="1.8" fill="#ffffff"/>
-            <circle cx="66" cy="49" r="1.8" fill="#ffffff"/>
-            <path d="M40 66 Q50 76 60 66" stroke="#052e16" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <circle cx="29" cy="62" r="4.5" fill="#d1fae5" opacity=".85"/>
-            <circle cx="71" cy="62" r="4.5" fill="#d1fae5" opacity=".85"/>
-          </svg>
+          <img class="char-img" src="scout.png" alt="Scout" draggable="false">
           <span class="check-badge"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </span>
         <span class="char-name">Scout</span>
@@ -382,9 +358,14 @@ var newBestEl     = document.getElementById('newBestTag');
 var muteBtn       = document.getElementById('muteBtn');
 var W = 620, H = 700;
 
-/* pilot character image (shared by select screen + in-game player) */
-var pilotImg = new Image();
-pilotImg.src = 'pilot.png';
+/* uploaded character images (shared by select screen + in-game player) */
+var CHAR_IMG_SRC = { explorer: 'explorer.png', scout: 'scout.png', pilot: 'pilot.png' };
+var charImgs = {};
+Object.keys(CHAR_IMG_SRC).forEach(function (k) {
+  var im = new Image();
+  im.src = CHAR_IMG_SRC[k];
+  charImgs[k] = im;
+});
 
 /* ================= Audio ================= */
 var audioCtx = null, muted = false, musicTimer = null, musicStep = 0;
@@ -730,10 +711,11 @@ function drawPlayer() {
   ctx.save();
   ctx.shadowColor = c.base; ctx.shadowBlur = 22;
 
-  /* pilot uses the uploaded character image */
-  if (player.char === 'pilot') {
+  /* uploaded character images take over rendering */
+  var cimg = charImgs[player.char];
+  if (cimg && cimg.complete && cimg.naturalWidth > 0) {
     var s = r * 2.15;
-    ctx.drawImage(pilotImg, x - s / 2, y - s / 2, s, s);
+    ctx.drawImage(cimg, x - s / 2, y - s / 2, s, s);
     ctx.restore();
     return;
   }
